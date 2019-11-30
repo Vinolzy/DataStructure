@@ -1,0 +1,32 @@
+从每一位检测最长。所以b不会到最后。
+
+#include <iostream>
+using namespace std;
+int main()
+{
+    int t,a,b,Max,c,d;
+    a=b=Max=0;
+    cin >> t;
+    int arr[t];
+    for(int i=0;i<t;i++)
+        cin>>arr[i];
+    while(b < t)
+    {
+        b = a+1;
+        while(b < t &&arr[b] > arr[b-1]) b++;
+        if(b-a>Max)
+        {
+            Max = b - a;
+            c = a;
+            d = b;
+        }
+        a++;
+    }
+    for(int i = c; i < d; ++i)
+    {
+        if(i == c)
+            cout<<arr[i];
+        else
+            cout<<" "<<arr[i];
+    }
+}

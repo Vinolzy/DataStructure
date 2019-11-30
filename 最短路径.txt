@@ -1,0 +1,102 @@
+#include<stdio.h>
+#include<iostream>
+using namespace std;
+struct City
+{
+    int visit;//该城市是否已作为最近点被访问
+    int minlen;//该城市到救援城市的距离
+    int man;//在该城市已经集合的救援队人数
+    int cont;//到该城市有几条同长度最短路径
+    int pre;//到该城市的前一个前一个城市序号
+}Visit[521];
+int Graph[521][521];//城市路径数组
+int cityman[521];//每个城市的救援队数量
+void InitVisit(int N, int S)//初始化Visit
+{
+    for(int i=0; i<N; i++){
+        Visit[i].minlen = 521;//将每个城市的最短路径都设为最大,521
+        Visit[i].visit = 0;//都设为未访问
+        Visit[i].cont = 1;//最短路径数量都设为1
+        Visit[i].man = 0;//将救援队数量都初始化为0
+    }
+    //Visit[S].man = cityman[S];
+    Visit[S].visit = 1;//源城市设为访问过
+}
+void InitGraph(int N, int M)//初始化城市地图
+{
+    for(int i=0; i<=N; i++)
+        for(int j=0; j<=N; j++)
+            Graph[i][j] = 521;//初始化任意两个城市间的距离为最大521
+    int v1, v2, s;
+    for(int i=0; i<M; i++){//输入城市地图
+        cin>>v1>>v2>>s;
+        Graph[v1][v2] = Graph[v2][v1] = s;
+    }
+}
+void DKS_GetMi(int N, int S, int D)//根据迪杰斯特拉算法求单源点最短路径
+{
+    for(int i=0; i<=N; i++)
+    {//根据城市地图更新Visit
+        Visit[i].minlen=Graph[i][S];//各城市到出发地的距离
+        if(Graph[i][S]!=521){//此城市有直接到源城市的路径
+            Visit[i].man = cityman[i]+cityman[S];//救援队人数为自身加上源城市的人数
+            Visit[i].pre = S;//如果到源城市有路径，则设该城市的前一个城市为源城市
+        }
+    }
+    for(int j=1; j<N; j++)
+    {//循环N-1次，每次找到剩余城市中距离最近的
+        int minpoint = N;//第N个点已设置为无穷远,对应上一个循环的i<=N
+        for(int i=0; i<N; i++){//找到未访问的最近的城市
+            if(Visit[i].minlen<Visit[minpoint].minlen&&!Visit[i].visit)
+               minpoint = i;
+        }
+        Visit[minpoint].visit=1;//将找到的最近的城市设置为已访问
+        for(int i=0; i<N; i++){//根据找到的最近点的城市更新其他城市的距离
+            if(!Visit[i].visit){
+                if(Visit[i].minlen>Visit[minpoint].minlen+Graph[i][minpoint]){//若有更短距离则更新,间接到达比直接到达距离要短
+                    Visit[i].minlen = Visit[minpoint].minlen+Graph[i][minpoint];//更新最短距离
+                    Visit[i].man = Visit[minpoint].man+cityman[i];//修改聚集的救援队人数：上一个城市集合的数量加上分配在该城市的数量
+                    Visit[i].pre = minpoint;//设置上一个城市的序号
+                    Visit[i].cont = Visit[minpoint].cont;//更新同长度路径数量：为上一个城市的同长度路径数量
+                }
+                else if(Visit[i].minlen==Visit[minpoint].minlen+Graph[i][minpoint]){//若路径相等，则更新有关信息
+                    Visit[i].cont += Visit[minpoint].cont;//相等路径数量为：原来的数量 + 新路径中到前一个城市的相等路径数量
+                    //路长相同，选择能集合救援队最多的,若是本来的则不变，若是经过其它点则更新
+                    if(Visit[i].man<cityman[i]+Visit[minpoint].man){
+                        Visit[i].man = cityman[i]+Visit[minpoint].man;
+                        Visit[i].pre = minpoint;
+                    }
+                }
+            }
+        }
+    }
+
+}
+int main()
+{
+    freopen("in.txt","r",stdin);
+    int N, M, S, D;//N:城市个数 M:快速道路的条数 S/D:出发地/目的地的城市编号
+    cin>>N>>M>>S>>D;
+    for(int i=0; i<N; i++)
+        cin>>cityman[i];
+    InitVisit(N, S);
+    InitGraph(N,M);
+    DKS_GetMi(N,S,D);
+    cout<<Visit[D].cont<<" "<<Visit[D].man<<endl;
+    // 建立数组存储路径序列
+    int a[521];
+    int len = 520;
+    int pre = D;
+    while(pre!=S){//从目的地找前一个城市，一直找到源城市
+        a[len--] = pre;
+        pre = Visit[pre].pre;
+    }
+    a[len] = S;
+    for(int i=len; i<521; i++){
+        if(i==len)
+            cout<<a[i];
+        else
+            cout<<" "<<a[i];
+    }
+
+}

@@ -1,0 +1,101 @@
+int GetHeight( BinTree BT )
+{
+	int l, r;
+	if (BT)
+	{
+		l = GetHeight(BT->Left);
+		r = GetHeight(BT->Right);
+		return l > r ? l+1: r+1;
+	}else
+        return 0;
+}
+------
+void InorderTraversal( BinTree BT )
+{
+    if (BT)
+    {
+        InorderTraversal(BT->Left);
+        printf(" %c", BT->Data);
+        InorderTraversal(BT->Right);
+    }
+}
+------
+层序
+#define MAXQSIZE 1000
+typedef struct{
+	BinTree base[MAXQSIZE];
+	int front;
+	int rear;
+}SqQueue;
+
+void InitQueue(SqQueue *Q)
+{
+	Q->front=Q->rear=0;
+}
+
+int EnQueue(SqQueue *Q,BinTree e)
+{
+	if((Q->rear+1)%MAXQSIZE==Q->front) return 0;
+	Q->base[Q->rear]=e;
+	Q->rear=(Q->rear+1)%MAXQSIZE;
+	return 1;
+}
+
+
+int DeQueue (SqQueue *Q,BinTree *e)//C语言无引用传指针
+{
+	if(Q->front==Q->rear)
+		return 0;
+	*e=Q->base[Q->front];
+	Q->front=(Q->front+1)%MAXQSIZE;
+	return 1;
+}
+
+
+int QueueEmpty(SqQueue Q)
+{
+	if(Q.rear==Q.front)
+		return 1;
+	else
+		return 0;
+}
+void LevelorderTraversal( BinTree BT )
+{
+    SqQueue Q;
+    BinTree p;
+    p=BT;
+	InitQueue(&Q);
+	if(p) EnQueue(&Q,p);
+	while(!QueueEmpty(Q))
+	{
+		DeQueue(&Q,&p);
+		printf(" %c",p->Data);
+		if(p->Left) EnQueue(&Q,p->Left);
+		if(p->Right) EnQueue(&Q,p->Right);
+	}
+}
+-----
+邻接表遍历
+void BFS(LGraph Graph, Vertex S, void(*Visit)(Vertex))
+{
+	int p [MaxVertexNum],a;
+	PtrToAdjVNode q = NULL;
+	int f = 0, r = 0;
+	p[r++] = S;
+	Visited[S] = true;
+	while (f!=r)
+	{
+		a = p[f++];
+		Visit(a);
+		q = Graph->G[a].FirstEdge;
+		while (q)
+		{
+			if (!Visited[q->AdjV])
+			{
+				p[r++] = q->AdjV;
+				Visited[q->AdjV] = true;
+			}
+			q = q->Next;
+		}
+	}
+}
